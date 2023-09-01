@@ -15,6 +15,12 @@ COPY usr /usr
 ADD packages.json /tmp/packages.json
 ADD build.sh /tmp/build.sh
 
+# gnome-vrr
+RUN wget https://copr.fedorainfracloud.org/coprs/kylegospo/gnome-vrr/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-gnome-vrr-fedora-"${FEDORA_MAJOR_VERSION}".repo -O /etc/yum.repos.d/_copr_kylegospo-gnome-vrr.repo
+RUN rpm-ostree override replace --experimental --from repo=copr:copr.fedorainfracloud.org:kylegospo:gnome-vrr mutter mutter-common gnome-control-center gnome-control-center-filesystem xorg-x11-server-Xwayland
+RUN rm -f /etc/yum.repos.d/_copr_kylegospo-gnome-vrr.repo
+
+
 RUN /tmp/build.sh && \
     wget https://copr.fedorainfracloud.org/coprs/ublue-os/gnome-software/repo/fedora-${FEDORA_VERSION}/ublue-os-gnome-software-fedora-${FEDORA_VERSION}.repo -O /etc/yum.repos.d/ublue-os-gnome-software.repo && \
     rpm-ostree override replace --experimental --from repo=copr:copr.fedorainfracloud.org:ublue-os:gnome-software gnome-software gnome-software-rpm-ostree && \
@@ -31,6 +37,19 @@ RUN /tmp/build.sh && \
     ostree container commit && \
     mkdir -p /var/tmp && \
     chmod -R 1777 /var/tmp
+
+RUN rm -rf /tmp/* /var/*
+RUN ostree container commit
+
+# Image for System76 laptops
+FROM beyond AS system76
+
+COPY system76/usr /usr
+
+RUN rpm-ostree install tlp tlp-rdw stress-ng
+RUN rpm-ostree override remove power-profiles-daemon
+RUN systemctl enable tlp
+# RUN systemctl enable fprintd.service
 
 RUN rm -rf /tmp/* /var/*
 RUN ostree container commit

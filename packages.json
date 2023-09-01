@@ -15,7 +15,8 @@
                 "htop",
                 "firefox",
                 "firefox-langpacks",
-                "nvtop"
+                "nvtop",
+                "fish"
             ]
         }
     },
