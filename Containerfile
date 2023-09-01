@@ -32,6 +32,15 @@ RUN /tmp/build.sh && \
     systemctl unmask dconf-update.service && \
     systemctl enable dconf-update.service && \
     systemctl enable rpm-ostree-countme.service && \
+    pip install --prefix=/usr yafti && \
+    systemctl enable tailscaled.service && \
+    systemctl enable dconf-update.service && \
+    rm -f /etc/yum.repos.d/tailscale.repo && \
+    rm -f /usr/share/applications/htop.desktop && \
+    rm -f /usr/share/applications/nvtop.desktop && \
+    sed -i 's/#DefaultTimeoutStopSec.*/DefaultTimeoutStopSec=15s/' /etc/systemd/user.conf && \
+    sed -i 's/#DefaultTimeoutStopSec.*/DefaultTimeoutStopSec=15s/' /etc/systemd/system.conf && \
+    sed -i '/^PRETTY_NAME/s/Silverblue/beyond/' /usr/lib/os-release \
     fc-cache -f /usr/share/fonts/inter && \
     rm -rf /tmp/* /var/* && \
     ostree container commit && \
@@ -42,7 +51,7 @@ RUN rm -rf /tmp/* /var/*
 RUN ostree container commit
 
 # Image for System76 laptops
-FROM beyond AS system76
+FROM beyond AS beyond-system76
 
 COPY system76/usr /usr
 
