@@ -15,12 +15,6 @@ COPY usr /usr
 ADD packages.json /tmp/packages.json
 ADD build.sh /tmp/build.sh
 
-# gnome-vrr
-RUN wget https://copr.fedorainfracloud.org/coprs/kylegospo/gnome-vrr/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-gnome-vrr-fedora-"${FEDORA_MAJOR_VERSION}".repo -O /etc/yum.repos.d/_copr_kylegospo-gnome-vrr.repo
-RUN rpm-ostree override replace --experimental --from repo=copr:copr.fedorainfracloud.org:kylegospo:gnome-vrr mutter mutter-common gnome-control-center gnome-control-center-filesystem xorg-x11-server-Xwayland
-RUN rm -f /etc/yum.repos.d/_copr_kylegospo-gnome-vrr.repo
-
-
 RUN /tmp/build.sh && \
     wget https://copr.fedorainfracloud.org/coprs/ublue-os/gnome-software/repo/fedora-${FEDORA_VERSION}/ublue-os-gnome-software-fedora-${FEDORA_VERSION}.repo -O /etc/yum.repos.d/ublue-os-gnome-software.repo && \
     rpm-ostree override replace --experimental --from repo=copr:copr.fedorainfracloud.org:ublue-os:gnome-software gnome-software gnome-software-rpm-ostree && \
@@ -32,15 +26,6 @@ RUN /tmp/build.sh && \
     systemctl unmask dconf-update.service && \
     systemctl enable dconf-update.service && \
     systemctl enable rpm-ostree-countme.service && \
-    pip install --prefix=/usr yafti && \
-    systemctl enable tailscaled.service && \
-    systemctl enable dconf-update.service && \
-    rm -f /etc/yum.repos.d/tailscale.repo && \
-    rm -f /usr/share/applications/htop.desktop && \
-    rm -f /usr/share/applications/nvtop.desktop && \
-    sed -i 's/#DefaultTimeoutStopSec.*/DefaultTimeoutStopSec=15s/' /etc/systemd/user.conf && \
-    sed -i 's/#DefaultTimeoutStopSec.*/DefaultTimeoutStopSec=15s/' /etc/systemd/system.conf && \
-    sed -i '/^PRETTY_NAME/s/Silverblue/beyond/' /usr/lib/os-release \
     fc-cache -f /usr/share/fonts/inter && \
     rm -rf /tmp/* /var/* && \
     ostree container commit && \
@@ -50,15 +35,20 @@ RUN /tmp/build.sh && \
 RUN rm -rf /tmp/* /var/*
 RUN ostree container commit
 
-# Image for System76 laptops
-FROM beyond AS beyond-system76
+# # gnome-vrr
+# RUN wget https://copr.fedorainfracloud.org/coprs/kylegospo/gnome-vrr/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-gnome-vrr-fedora-"${FEDORA_MAJOR_VERSION}".repo -O /etc/yum.repos.d/_copr_kylegospo-gnome-vrr.repo
+# RUN rpm-ostree override replace --experimental --from repo=copr:copr.fedorainfracloud.org:kylegospo:gnome-vrr mutter mutter-common gnome-control-center gnome-control-center-filesystem xorg-x11-server-Xwayland
+# RUN rm -f /etc/yum.repos.d/_copr_kylegospo-gnome-vrr.repo
 
-COPY system76/usr /usr
+# # Image for System76 laptops
+# FROM beyond AS system76
 
-RUN rpm-ostree install tlp tlp-rdw stress-ng
-RUN rpm-ostree override remove power-profiles-daemon
-RUN systemctl enable tlp
-# RUN systemctl enable fprintd.service
+# COPY system76/usr /usr
 
-RUN rm -rf /tmp/* /var/*
-RUN ostree container commit
+# RUN rpm-ostree install tlp tlp-rdw stress-ng
+# RUN rpm-ostree override remove power-profiles-daemon
+# RUN systemctl enable tlp
+# # RUN systemctl enable fprintd.service
+
+# RUN rm -rf /tmp/* /var/*
+# RUN ostree container commit
